@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "foodbridge-auth"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["auth-service:4001"]
+  - job_name: "foodbridge-donation"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["donation-service:4002"]
+  - job_name: "foodbridge-notification"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["notification-service:4003"]
+  - job_name: "foodbridge-tracking"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["tracking-service:4004"]

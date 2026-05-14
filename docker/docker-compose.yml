@@ -1,0 +1,187 @@
+name: foodbridge
+
+networks:
+  foodbridge:
+    driver: bridge
+
+volumes:
+  pgdata: {}
+  donation_uploads: {}
+  esdata: {}
+  grafanadata: {}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: foodbridge
+      POSTGRES_PASSWORD: foodbridge
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodbridge"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [foodbridge]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks: [foodbridge]
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    volumes:
+      - ../logging/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "12201:12201/udp"
+    depends_on:
+      - elasticsearch
+    networks: [foodbridge]
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks: [foodbridge]
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks: [foodbridge]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafanadata:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks: [foodbridge]
+
+  auth-service:
+    build:
+      context: ../auth-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 4001
+      DB_HOST: postgres
+      DB_USER: foodbridge
+      DB_PASSWORD: foodbridge
+      DB_NAME: foodbridge_auth
+      JWT_SECRET: supersecretjwt-change-me
+      INTERNAL_API_KEY: internal-dev-key
+      APP_URL: ${FOODBRIDGE_PUBLIC_URL:-http://localhost:18080}
+      NODE_ENV: production
+      CORS_ORIGIN: ${FOODBRIDGE_CORS:-http://localhost,http://127.0.0.1,http://localhost:18080,http://127.0.0.1:18080}
+      ALLOW_PUBLIC_ADMIN: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [foodbridge]
+
+  donation-service:
+    build:
+      context: ../donation-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 4002
+      DB_HOST: postgres
+      DB_USER: foodbridge
+      DB_PASSWORD: foodbridge
+      DB_NAME: foodbridge_donation
+      JWT_SECRET: supersecretjwt-change-me
+      INTERNAL_API_KEY: internal-dev-key
+      NOTIFICATION_SERVICE_URL: http://notification-service:4003
+      TRACKING_SERVICE_URL: http://tracking-service:4004
+      UPLOAD_DIR: /app/uploads
+      NODE_ENV: production
+      CORS_ORIGIN: ${FOODBRIDGE_CORS:-http://localhost,http://127.0.0.1,http://localhost:18080,http://127.0.0.1:18080}
+    volumes:
+      - donation_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [foodbridge]
+
+  notification-service:
+    build:
+      context: ../notification-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 4003
+      DB_HOST: postgres
+      DB_USER: foodbridge
+      DB_PASSWORD: foodbridge
+      DB_NAME: foodbridge_notification
+      JWT_SECRET: supersecretjwt-change-me
+      INTERNAL_API_KEY: internal-dev-key
+      NODE_ENV: production
+      CORS_ORIGIN: ${FOODBRIDGE_CORS:-http://localhost,http://127.0.0.1,http://localhost:18080,http://127.0.0.1:18080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [foodbridge]
+
+  tracking-service:
+    build:
+      context: ../tracking-service
+      dockerfile: Dockerfile
+    environment:
+      PORT: 4004
+      DB_HOST: postgres
+      DB_USER: foodbridge
+      DB_PASSWORD: foodbridge
+      DB_NAME: foodbridge_tracking
+      JWT_SECRET: supersecretjwt-change-me
+      INTERNAL_API_KEY: internal-dev-key
+      NODE_ENV: production
+      CORS_ORIGIN: ${FOODBRIDGE_CORS:-http://localhost,http://127.0.0.1,http://localhost:18080,http://127.0.0.1:18080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [foodbridge]
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    networks: [foodbridge]
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - frontend
+      - auth-service
+      - donation-service
+      - notification-service
+      - tracking-service
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      # Host 8080 is often taken (IDE, other stacks). Override: FOODBRIDGE_GATEWAY_PORT=8090 docker compose up
+      - "${FOODBRIDGE_GATEWAY_PORT:-18080}:80"
+    networks: [foodbridge]

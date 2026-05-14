@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+.glass {
+  @apply bg-white/80 backdrop-blur-md border border-white/40 shadow-lg;
+}
+
+.gradient-hero {
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(94, 234, 212, 0.35), transparent),
+    radial-gradient(900px 500px at 90% 0%, rgba(251, 146, 60, 0.25), transparent),
+    linear-gradient(180deg, #ecfdf5 0%, #fff7ed 45%, #f8fafc 100%);
+}
