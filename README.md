@@ -79,3 +79,5 @@ This repo is a **template / teaching stack**. Harden for production: disable `AL
 ## License
 
 MIT (adjust as needed for your course or organization).
+
+New Features

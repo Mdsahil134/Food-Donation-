@@ -17,7 +17,7 @@ export default function Layout({ children }) {
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-orange-500 text-white shadow-md">
               FB
             </span>
-            FoodBridge
+            FoodBridge . 
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
             <NavLink to="/" className={({ isActive }) => (isActive ? "text-brand-orange" : "hover:text-brand-green")}>
