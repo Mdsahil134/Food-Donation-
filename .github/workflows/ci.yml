@@ -38,7 +38,7 @@ jobs:
           load: true
           tags: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:ci
       - name: Trivy scan (informational)
-       uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         continue-on-error: true
         with:
           image-ref: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:ci
