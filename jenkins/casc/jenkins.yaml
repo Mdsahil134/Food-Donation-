@@ -1,0 +1,18 @@
+jenkins:
+  systemMessage: "FoodBridge CI — mirrors .github/workflows/ci.yml"
+  numExecutors: 2
+  mode: NORMAL
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: foodbridge-example-secret
+              secret: "replace-me-in-production"
+              description: "Example placeholder for registry or deploy secrets"
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"

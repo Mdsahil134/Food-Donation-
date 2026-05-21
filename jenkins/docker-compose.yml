@@ -1,0 +1,25 @@
+name: foodbridge-jenkins
+
+volumes:
+  jenkins_home: {}
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodbridge-jenkins
+    restart: unless-stopped
+    ports:
+      - "${JENKINS_HTTP_PORT:-8080}:8080"
+      - "${JENKINS_AGENT_PORT:-50000}:50000"
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+      CASC_JENKINS_CONFIG: /var/jenkins_home/casc_configs
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./casc:/var/jenkins_home/casc_configs:ro
+    group_add:
+      # docker.sock GID on the host (Linux). Override if builds fail with permission denied.
+      - "${DOCKER_GID:-999}"

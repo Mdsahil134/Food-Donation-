@@ -22,6 +22,22 @@
 2. In `.github/workflows/ci.yml`, add `docker/login-action` and set `push: true` with tags such as `ghcr.io/<org>/foodbridge-auth:latest`.
 3. Optionally add a Trivy or Grype scan step after build.
 
+## Jenkins (self-hosted CI)
+
+Jenkins runs **separately** from the app stack so you can CI without starting Postgres/ELK.
+
+1. From `jenkins/`:
+
+   ```powershell
+   docker compose up --build -d
+   ```
+
+2. UI: **http://localhost:8080** (`JENKINS_HTTP_PORT` to change the host port).
+3. Create a **Pipeline** job: *Pipeline script from SCM* → Git URL → **Script Path** `Jenkinsfile`.
+4. Details, Docker socket permissions, and customization: [jenkins/README.md](../jenkins/README.md).
+
+The root `Jenkinsfile` mirrors GitHub Actions: microservice tests, parallel Docker builds, frontend `npm run build` + image build.
+
 ## Kubernetes (outline)
 
 Sample manifests live under `kubernetes/`. Typical steps:

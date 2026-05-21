@@ -1,6 +1,6 @@
 # FoodBridge — Food Waste Donation Platform
 
-FoodBridge is a **production-style demo** of a food rescue network: donors list surplus meals, NGOs accept nearby pickups, and everyone gets **notifications**, **expiry automation**, and **pickup tracking**. The codebase is split into **containerized microservices** behind **Nginx**, with **PostgreSQL**, **Prometheus + Grafana**, **Elasticsearch + Logstash + Kibana**, **GitHub Actions CI**, and optional **Kubernetes** manifests.
+FoodBridge is a **production-style demo** of a food rescue network: donors list surplus meals, NGOs accept nearby pickups, and everyone gets **notifications**, **expiry automation**, and **pickup tracking**. The codebase is split into **containerized microservices** behind **Nginx**, with **PostgreSQL**, **Prometheus + Grafana**, **Elasticsearch + Logstash + Kibana**, **GitHub Actions CI**, optional **Jenkins** (self-hosted), and **Kubernetes** manifests.
 
 ## Architecture (summary)
 
@@ -60,7 +60,7 @@ Vite proxies `/api` and `/uploads` to `http://localhost:18080` — run the gatew
 
 ```
 auth-service/ donation-service/ notification-service/ tracking-service/
-frontend/ nginx/ docker/ monitoring/ logging/ docs/ kubernetes/ backend/
+frontend/ nginx/ docker/ jenkins/ monitoring/ logging/ docs/ kubernetes/ backend/
 ```
 
 - **`docker/docker-compose.yml`** — full stack (DB, microservices, Nginx, observability, ELK).
@@ -70,7 +70,19 @@ frontend/ nginx/ docker/ monitoring/ logging/ docs/ kubernetes/ backend/
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/ci.yml`) runs `npm test` on each Node service and builds Docker images (push disabled by default; wire `docker/login-action` and `push: true` for GHCR/Docker Hub).
+| Tool | Location | What it runs |
+|------|----------|----------------|
+| **GitHub Actions** | `.github/workflows/ci.yml` | Tests, Docker image builds (push off by default) |
+| **Jenkins** | `jenkins/` + root `Jenkinsfile` | Same pipeline locally; see [jenkins/README.md](jenkins/README.md) |
+
+Quick start Jenkins:
+
+```powershell
+cd jenkins
+docker compose up --build -d
+```
+
+Then open **http://localhost:8080** and create a **Pipeline** job from SCM with script path `Jenkinsfile`.
 
 ## Security notes
 
