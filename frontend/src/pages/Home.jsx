@@ -28,7 +28,7 @@ export default function Home() {
               Sustainability • Logistics • Impact
             </p>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-              Rescue surplus food before it expires.
+              Rescue surplus food before it expires MD Sahil.
             </h1>
             <p className="mt-5 text-lg text-slate-600 max-w-xl">
               FoodBridge connects hotels, restaurants, and events with NGOs and volunteers through secure workflows,
