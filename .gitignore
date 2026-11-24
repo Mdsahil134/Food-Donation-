@@ -4,3 +4,7 @@ dist
 .env.*
 *.log
 .DS_Store
+# Ansible secrets
+deploy/ansible/inventory/group_vars/app_servers.yml
+deploy/ansible/.vault_pass
+deploy/ansible/inventory/hosts.local.ini

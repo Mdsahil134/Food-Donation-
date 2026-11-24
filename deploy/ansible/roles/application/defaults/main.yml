@@ -13,11 +13,8 @@ foodbridge_cors_origins: "http://localhost,http://127.0.0.1,http://{{ ansible_ho
 
 # Database credentials
 foodbridge_db_user: foodbridge
-foodbridge_db_password: "change-this-secure-db-password"
 
 # Application Security Keys
-foodbridge_jwt_secret: "change-this-jwt-secret-in-vault-or-vars"
-foodbridge_internal_api_key: "change-this-internal-key-in-vault"
 
 # Health check settings
 foodbridge_health_retries: 24

@@ -37,6 +37,7 @@
       POSTGRES_PASSWORD={{ foodbridge_db_password }}
       JWT_SECRET={{ foodbridge_jwt_secret }}
       INTERNAL_API_KEY={{ foodbridge_internal_api_key }}
+      GRAFANA_ADMIN_PASSWORD={{ foodbridge_grafana_admin_password }}
     owner: "{{ foodbridge_user }}"
     group: "{{ foodbridge_group }}"
     mode: '0600'
@@ -44,7 +45,7 @@
 
 - name: Pull or build and launch FoodBridge Docker containers
   ansible.builtin.command:
-    cmd: docker compose up --build -d
+    cmd: docker compose --parallel 1 up --build -d
     chdir: "{{ foodbridge_app_dir }}/deploy/docker"
   register: compose_up_result
   changed_when: "'Created' in compose_up_result.stdout or 'Recreated' in compose_up_result.stdout or 'Starting' in compose_up_result.stdout"
