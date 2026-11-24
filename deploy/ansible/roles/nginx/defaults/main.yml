@@ -1,0 +1,6 @@
+---
+# Nginx role defaults
+nginx_manage_host: false
+nginx_server_name: "_"
+nginx_upstream_port: "{{ foodbridge_gateway_port | default(18080) }}"
+nginx_client_max_body_size: "20m"

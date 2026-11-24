@@ -1,0 +1,7 @@
+---
+# Playbook: Install Docker Engine and Compose plugin
+- name: Install and configure Docker on FoodBridge host
+  hosts: app_servers
+  become: yes
+  roles:
+    - docker

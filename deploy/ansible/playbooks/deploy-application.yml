@@ -1,0 +1,7 @@
+---
+# Playbook: Deploy FoodBridge full-stack platform
+- name: Deploy FoodBridge microservices and database
+  hosts: app_servers
+  become: yes
+  roles:
+    - application

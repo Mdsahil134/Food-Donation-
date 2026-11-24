@@ -1,0 +1,7 @@
+---
+# Playbook: Optional host-level Nginx configuration
+- name: Configure Nginx host reverse proxy
+  hosts: app_servers
+  become: yes
+  roles:
+    - nginx

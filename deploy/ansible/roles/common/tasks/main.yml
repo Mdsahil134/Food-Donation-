@@ -1,0 +1,87 @@
+---
+# Common role tasks for Ubuntu/Debian hosts
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all safe packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: yes
+    autoclean: yes
+
+- name: Install essential baseline utilities
+  ansible.builtin.apt:
+    name: "{{ common_essential_packages }}"
+    state: present
+
+- name: Set vm.max_map_count for Elasticsearch in sysctl
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "{{ common_vm_max_map_count }}"
+    state: present
+    reload: yes
+  notify: reload sysctl
+
+- name: Check if swapfile exists
+  ansible.builtin.stat:
+    path: "{{ common_swap_path }}"
+  register: swap_stat
+  when: common_configure_swap
+
+- name: Create swapfile if not present
+  ansible.builtin.command: "fallocate -l {{ common_swap_size_gb }}G {{ common_swap_path }}"
+  when:
+    - common_configure_swap
+    - not swap_stat.stat.exists
+  changed_when: true
+
+- name: Set secure permissions on swapfile
+  ansible.builtin.file:
+    path: "{{ common_swap_path }}"
+    owner: root
+    group: root
+    mode: '0600'
+  when: common_configure_swap
+
+- name: Format swapfile
+  ansible.builtin.command: "mkswap {{ common_swap_path }}"
+  when:
+    - common_configure_swap
+    - not swap_stat.stat.exists
+  changed_when: true
+
+- name: Enable swapfile
+  ansible.builtin.command: "swapon {{ common_swap_path }}"
+  when:
+    - common_configure_swap
+    - not swap_stat.stat.exists
+  changed_when: true
+
+- name: Add swapfile to /etc/fstab for persistent mount
+  ansible.posix.mount:
+    name: none
+    src: "{{ common_swap_path }}"
+    fstype: swap
+    opts: sw
+    state: present
+  when: common_configure_swap
+
+- name: Ensure UFW allows SSH on port 22
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+  when: ansible_os_family == "Debian"
+
+- name: Ensure UFW allows HTTP and HTTPS
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - '80'
+    - '443'
+    - '18080'
+  when: ansible_os_family == "Debian"

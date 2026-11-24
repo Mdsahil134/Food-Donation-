@@ -1,0 +1,48 @@
+# =============================================================================
+# FoodBridge Platform - Terraform Configuration Variables
+# =============================================================================
+# Copy this file to `terraform.tfvars` and customize with your actual values:
+# cp terraform.tfvars.example terraform.tfvars
+# =============================================================================
+
+# AWS Region to deploy or manage resources
+aws_region = "ap-south-1"
+
+# AWS CLI profile (optional, leave blank to use default credentials)
+aws_profile = ""
+
+# Project and Environment Naming
+project_name = "foodbridge"
+environment  = "production"
+
+# EC2 Instance Sizing (Minimum t3.medium recommended for Node + Postgres + Monitoring)
+instance_type = "t3.medium"
+
+# Name of your existing EC2 Key Pair in AWS
+key_name = "foodbridge-key"
+
+# Trusted IP address allowed to connect via SSH (Port 22)
+# Run `curl https://checkip.amazonaws.com` to find your public IP.
+# Example: ["203.0.113.50/32"]
+allowed_ssh_cidr = [
+  "YOUR_PUBLIC_IP/32"
+]
+
+# Trusted CIDR allowed to access Grafana (3001) and Prometheus (9090)
+allowed_monitoring_cidr = [
+  "YOUR_PUBLIC_IP/32"
+]
+
+# Port exposed by the Nginx reverse proxy gateway (default 18080)
+gateway_port = 18080
+
+# Root volume size in GB (30GB gp3 recommended)
+root_volume_size = 30
+root_volume_type = "gp3"
+
+# Optional: Specific VPC and Subnet (leave empty to use default VPC/Subnet)
+# vpc_id    = "vpc-xxxxxxxx"
+# subnet_id = "subnet-xxxxxxxx"
+
+# Enable CloudWatch 1-minute detailed metrics
+enable_detailed_monitoring = false

@@ -1,0 +1,25 @@
+---
+# Master Site Playbook: Provisions and deploys the entire FoodBridge stack
+- name: 1. Setup base OS, swap space, and security limits
+  hosts: app_servers
+  become: yes
+  roles:
+    - common
+
+- name: 2. Install Docker Engine and Compose plugin
+  hosts: app_servers
+  become: yes
+  roles:
+    - docker
+
+- name: 3. Configure host Nginx (if enabled)
+  hosts: app_servers
+  become: yes
+  roles:
+    - nginx
+
+- name: 4. Deploy FoodBridge application, database, and monitoring
+  hosts: app_servers
+  become: yes
+  roles:
+    - application

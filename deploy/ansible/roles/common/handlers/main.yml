@@ -1,0 +1,9 @@
+---
+# Common role handlers
+- name: restart ufw
+  ansible.builtin.service:
+    name: ufw
+    state: restarted
+
+- name: reload sysctl
+  ansible.builtin.command: sysctl --system

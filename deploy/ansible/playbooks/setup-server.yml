@@ -1,0 +1,7 @@
+---
+# Playbook: Setup base operating system and security
+- name: Setup FoodBridge base operating system
+  hosts: app_servers
+  become: yes
+  roles:
+    - common

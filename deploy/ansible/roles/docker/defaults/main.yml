@@ -1,0 +1,15 @@
+---
+# Docker role default variables
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_users:
+  - ubuntu
+  - "{{ ansible_user | default('ubuntu') }}"
+
+docker_log_max_size: "20m"
+docker_log_max_file: "3"

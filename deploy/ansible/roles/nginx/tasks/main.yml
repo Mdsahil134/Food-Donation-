@@ -1,0 +1,39 @@
+---
+# Nginx role tasks
+- name: Install Nginx on host (when nginx_manage_host is enabled)
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  when: nginx_manage_host
+
+- name: Deploy host Nginx reverse proxy site configuration
+  ansible.builtin.template:
+    src: foodbridge.conf.j2
+    dest: /etc/nginx/sites-available/foodbridge.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: nginx_manage_host
+  notify: reload nginx
+
+- name: Enable FoodBridge host Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/foodbridge.conf
+    dest: /etc/nginx/sites-enabled/foodbridge.conf
+    state: link
+  when: nginx_manage_host
+  notify: reload nginx
+
+- name: Remove default Nginx site configuration
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: nginx_manage_host
+  notify: reload nginx
+
+- name: Ensure host Nginx service is running and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+  when: nginx_manage_host

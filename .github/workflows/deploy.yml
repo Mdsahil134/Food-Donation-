@@ -1,0 +1,63 @@
+name: FoodBridge Automated CD Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Target Environment"
+        required: true
+        default: "production"
+  workflow_run:
+    workflows: ["FoodBridge CI"]
+    branches: [main, master]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        if: ${{ env.EC2_HOST != '' && env.SSH_KEY != '' }}
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH & Docker Compose
+        if: ${{ env.EC2_HOST != '' && env.SSH_KEY != '' }}
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          APP_DIR: "/opt/foodbridge"
+        run: |
+          ssh -i ~/.ssh/deploy_key "$EC2_USER@$EC2_HOST" << 'EOF'
+            set -e
+            echo "[*] Pulling latest changes into $APP_DIR..."
+            cd /opt/foodbridge
+            git pull origin master || git pull origin main
+            echo "[*] Rebuilding and launching containers..."
+            cd deploy/docker
+            docker compose up --build -d
+            echo "[*] Verifying gateway health..."
+            for i in $(seq 1 12); do
+              if curl -sf http://127.0.0.1:18080/health | grep -q "gateway-ok"; then
+                echo "[✓] Gateway is healthy!"
+                exit 0
+              fi
+              echo "Waiting for gateway..."
+              sleep 5
+            done
+            echo "[-] Health check failed"
+            exit 1
+          EOF

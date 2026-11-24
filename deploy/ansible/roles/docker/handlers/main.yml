@@ -1,0 +1,10 @@
+---
+# Docker role handlers
+- name: restart docker
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes

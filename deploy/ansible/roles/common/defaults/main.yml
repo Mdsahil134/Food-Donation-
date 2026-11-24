@@ -1,0 +1,21 @@
+---
+# Common role default variables
+common_essential_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+  - htop
+  - ufw
+  - jq
+  - unzip
+  - python3-pip
+
+common_configure_swap: true
+common_swap_size_gb: 2
+common_swap_path: /swapfile
+
+# Elasticsearch requires at least 262,144 for vm.max_map_count
+common_vm_max_map_count: 262144

@@ -1,0 +1,24 @@
+---
+# Application role default variables
+foodbridge_app_dir: /opt/foodbridge
+foodbridge_user: ubuntu
+foodbridge_group: docker
+foodbridge_repo_url: "https://github.com/Mdsahil134/Food-Donation-.git"
+foodbridge_repo_version: "master"
+
+# Network & Gateway
+foodbridge_gateway_port: 18080
+foodbridge_public_url: "http://{{ ansible_host }}:{{ foodbridge_gateway_port }}"
+foodbridge_cors_origins: "http://localhost,http://127.0.0.1,http://{{ ansible_host }},http://{{ ansible_host }}:{{ foodbridge_gateway_port }}"
+
+# Database credentials
+foodbridge_db_user: foodbridge
+foodbridge_db_password: "change-this-secure-db-password"
+
+# Application Security Keys
+foodbridge_jwt_secret: "change-this-jwt-secret-in-vault-or-vars"
+foodbridge_internal_api_key: "change-this-internal-key-in-vault"
+
+# Health check settings
+foodbridge_health_retries: 24
+foodbridge_health_delay: 5
